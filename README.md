@@ -81,16 +81,35 @@ Expected health response:
 
 ## Deploying to Cloudflare
 
-1. **Authenticate** wrangler: `npx wrangler login`.
+1. **Authenticate** wrangler. Either OAuth:
 
-2. **Create the D1 database** and paste the returned id into `wrangler.jsonc`
-   (`d1_databases[0].database_id`):
+   ```bash
+   npx wrangler login
+   ```
+
+   …or, if the browser callback hangs (common on remote shells / behind a
+   firewall), use an **API token** instead — no browser needed. Create one at
+   <https://dash.cloudflare.com/profile/api-tokens> → *Create Custom Token* with:
+   *Workers Scripts · Edit*, *D1 · Edit*, *Workers R2 Storage · Edit*, and
+   *Account Settings · Read*. Then, in the same terminal for all following
+   commands:
+
+   ```bash
+   export CLOUDFLARE_API_TOKEN=your_token_here   # Windows cmd: set CLOUDFLARE_API_TOKEN=...
+   ```
+
+   Verify with `npx wrangler whoami`.
+
+2. **Create the D1 database** and put the returned id into `wrangler.jsonc` at
+   `d1_databases[0].database_id` (on the `DB` binding — if wrangler offers to add
+   it for you it creates a *second* binding named `moonwire`; use the `DB` one the
+   app reads and delete the duplicate):
 
    ```bash
    npx wrangler d1 create moonwire
    ```
 
-3. **Create the R2 bucket:**
+3. **Create the R2 bucket** (same note: keep the `UPLOADS` binding):
 
    ```bash
    npx wrangler r2 bucket create moonwire-uploads
@@ -102,13 +121,28 @@ Expected health response:
    node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))" | npx wrangler secret put SESSION_SECRET
    ```
 
-5. **Set `APP_ORIGIN`** in `wrangler.jsonc` `vars` to your deployed origin
-   (e.g. `https://moonwire.<you>.workers.dev` or your custom domain) and set
-   `COOKIE_SECURE` to `"true"` (you are on HTTPS in production). `APP_ORIGIN`
-   is the CSRF allow-list for cookie-authenticated mutations; it accepts a
-   comma-separated list.
+5. **Set the production origin.** In `wrangler.jsonc` `vars`, set `APP_ORIGIN`
+   to your public origin and `COOKIE_SECURE` to `"true"` (HTTPS in production).
+   `APP_ORIGIN` is the CSRF allow-list for cookie-authenticated mutations and
+   accepts a comma-separated list. **Get this right before first-run setup** — if
+   it doesn't match the origin in the browser, the setup POST is rejected (403).
 
-6. **Apply migrations to the remote D1** and **deploy:**
+   These `vars` apply to local dev too, so `.dev.vars` overrides them for
+   `wrangler dev` (`APP_ORIGIN=http://localhost:8787`, `COOKIE_SECURE=false`) —
+   keep those local values there so login works over plain http.
+
+6. **Custom domain (optional).** Add a route so the Worker serves your domain
+   (the zone must be on the same Cloudflare account; wrangler provisions the
+   hostname + certificate on deploy):
+
+   ```jsonc
+   "routes": [{ "pattern": "kanban.example.com", "custom_domain": true }]
+   ```
+
+   Set `APP_ORIGIN` to that same `https://…` origin. To turn off the
+   `*.workers.dev` URL entirely, also add `"workers_dev": false`.
+
+7. **Apply migrations to the remote D1** and **deploy:**
 
    ```bash
    npm run db:migrate:remote

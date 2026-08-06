@@ -1,47 +1,52 @@
 {
-  "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "moonwire",
-  "main": "src/worker/index.ts",
-  "compatibility_date": "2025-01-01",
-  "compatibility_flags": ["nodejs_compat"],
-  "observability": {
-    "enabled": true
-  },
-  // Serve the compiled React client as static assets. The Worker handles
-  // /api/*, /health, /openapi.json and /docs; everything else falls through
-  // to the SPA (single-page-application) fallback.
-  "assets": {
-    "directory": "./dist/client",
-    "binding": "ASSETS",
-    "not_found_handling": "single-page-application"
-  },
-  // Cloudflare's managed SQLite. Included in the Workers Free plan.
-  // Run `wrangler d1 create moonwire` and paste the returned database_id here.
-  "d1_databases": [
-    {
-      "binding": "DB",
-      "database_name": "moonwire",
-      "database_id": "REPLACE_WITH_D1_DATABASE_ID",
-      "migrations_dir": "migrations"
-    }
-  ],
-  // Object storage for uploaded image bytes. Included in the Workers Free plan.
-  // Run `wrangler r2 bucket create moonwire-uploads`.
-  "r2_buckets": [
-    {
-      "binding": "UPLOADS",
-      "bucket_name": "moonwire-uploads"
-    }
-  ],
-  "vars": {
-    // Exact origin allowed for cookie-authenticated mutations (CSRF defense).
-    // Override per-environment; for local dev http://localhost:5173 is added automatically.
-    "APP_ORIGIN": "http://localhost:8787",
-    // Set to "true" behind HTTPS so the session cookie carries the Secure flag.
-    "COOKIE_SECURE": "false",
-    "MAX_UPLOAD_BYTES": "10485760",
-    "MAX_ATTACHMENTS_PER_CARD": "12"
-  }
-  // SESSION_SECRET must be provided as a secret, never committed:
-  //   wrangler secret put SESSION_SECRET
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "moonwire",
+	"main": "src/worker/index.ts",
+	"compatibility_date": "2025-01-01",
+	"compatibility_flags": [
+		"nodejs_compat"
+	],
+	"observability": {
+		"enabled": true
+	},
+	// Serve the compiled React client as static assets. The Worker handles
+	// /api/*, /health, /openapi.json and /docs; everything else falls through
+	// to the SPA (single-page-application) fallback.
+	"assets": {
+		"directory": "./dist/client",
+		"binding": "ASSETS",
+		"not_found_handling": "single-page-application"
+	},
+	// Cloudflare's managed SQLite. Included in the Workers Free plan.
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "moonwire",
+			"database_id": "efc958e2-2c21-4008-91da-c47f1dda1834",
+			"migrations_dir": "migrations"
+		}
+	],
+	// Object storage for uploaded image bytes. Included in the Workers Free plan.
+	"r2_buckets": [
+		{
+			"binding": "UPLOADS",
+			"bucket_name": "moonwire-uploads"
+		}
+	],
+	"vars": {
+		// Canonical origin(s) allowed for cookie-authenticated mutations (CSRF defense).
+		// Comma-separated for more than one. Local dev overrides these via .dev.vars.
+		"APP_ORIGIN": "https://moonwire.1410555.xyz",
+		// Production is HTTPS, so the session cookie carries the Secure flag.
+		"COOKIE_SECURE": "true",
+		"MAX_UPLOAD_BYTES": "10485760",
+		"MAX_ATTACHMENTS_PER_CARD": "12"
+	},
+	// Serve from the custom domain. The zone (1410555.xyz) must be on this
+	// Cloudflare account; wrangler provisions the hostname + certificate on deploy.
+	"routes": [
+		{ "pattern": "moonwire.1410555.xyz", "custom_domain": true }
+	]
+	// SESSION_SECRET must be provided as a secret, never committed:
+	//   wrangler secret put SESSION_SECRET
 }
