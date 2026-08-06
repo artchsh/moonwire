@@ -6,6 +6,9 @@
 	"compatibility_flags": [
 		"nodejs_compat"
 	],
+	// Serve only from the custom domain (see routes below); disable the
+	// *.workers.dev URL entirely.
+	"workers_dev": false,
 	"observability": {
 		"enabled": true
 	},
