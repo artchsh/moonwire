@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { X, Trash2, Circle, CheckCircle2 } from "lucide-react";
 import type { CardDto } from "../../../shared/api";
 import { renderMarkdown } from "../../components/markdown";
 import { useConfirm, useToast } from "../../components/ui";
@@ -18,7 +19,7 @@ export function CardPanel({
 }: {
   card: CardDto;
   onClose: () => void;
-  onUpdate: (card: CardDto, patch: { title?: string; description?: string }) => Promise<CardDto | null>;
+  onUpdate: (card: CardDto, patch: { title?: string; description?: string; completed?: boolean }) => Promise<CardDto | null>;
   onDelete: (card: CardDto) => void | Promise<void>;
   onAttachmentsChanged: () => void | Promise<void>;
 }) {
@@ -116,15 +117,36 @@ export function CardPanel({
   }
 
   return (
-    <div
-      className="mw-panel"
-      role="dialog"
-      aria-modal="true"
-      aria-label={`Card: ${card.title}`}
-      ref={ref}
-      onPaste={onPaste}
-    >
+    <>
+      <div className="mw-panel-scrim" onClick={onClose} aria-hidden="true" />
+      <div
+        className="mw-panel"
+        role="dialog"
+        aria-modal="true"
+        aria-label={`Card: ${card.title}`}
+        ref={ref}
+        onPaste={onPaste}
+      >
       <div className="mw-panel__head">
+        <button
+          type="button"
+          className={`mw-complete-btn${card.completed ? " mw-complete-btn--on" : ""}`}
+          aria-pressed={card.completed}
+          onClick={() => void onUpdate(card, { completed: !card.completed })}
+        >
+          {card.completed ? <CheckCircle2 size={16} strokeWidth={2} /> : <Circle size={16} strokeWidth={1.75} />}
+          {card.completed ? "Completed" : "Mark complete"}
+        </button>
+        <div style={{ flex: 1 }} />
+        <button className="mw-icon-btn" aria-label="Delete card" onClick={requestDelete}>
+          <Trash2 size={18} strokeWidth={1.75} />
+        </button>
+        <button className="mw-icon-btn" aria-label="Close card" onClick={onClose}>
+          <X size={18} strokeWidth={1.75} />
+        </button>
+      </div>
+
+      <div className="mw-panel__title-row">
         <input
           className="mw-panel__title-input"
           value={title}
@@ -138,12 +160,6 @@ export function CardPanel({
             }
           }}
         />
-        <button className="mw-icon-btn" aria-label="Delete card" onClick={requestDelete}>
-          🗑
-        </button>
-        <button className="mw-icon-btn" aria-label="Close card" onClick={onClose}>
-          ✕
-        </button>
       </div>
 
       <div className="mw-panel__body">
@@ -184,6 +200,7 @@ export function CardPanel({
         </section>
       </div>
       {confirmEl}
-    </div>
+      </div>
+    </>
   );
 }

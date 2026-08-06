@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { X, ChevronLeft, ChevronRight } from "lucide-react";
 import type { AttachmentDto } from "../../../shared/api";
 
 export function ImageViewer({
@@ -34,7 +35,7 @@ export function ImageViewer({
       onMouseDown={(e) => e.target === e.currentTarget && onClose()}
     >
       <button className="mw-icon-btn mw-viewer__close" onClick={onClose} aria-label="Close viewer">
-        ✕
+        <X size={20} strokeWidth={1.75} />
       </button>
 
       {attachments.length > 1 && (
@@ -44,14 +45,14 @@ export function ImageViewer({
             aria-label="Previous image"
             onClick={() => setIndex((i) => (i - 1 + attachments.length) % attachments.length)}
           >
-            ‹
+            <ChevronLeft size={22} strokeWidth={1.75} />
           </button>
           <button
             className="mw-viewer__nav mw-viewer__nav--next"
             aria-label="Next image"
             onClick={() => setIndex((i) => (i + 1) % attachments.length)}
           >
-            ›
+            <ChevronRight size={22} strokeWidth={1.75} />
           </button>
         </>
       )}

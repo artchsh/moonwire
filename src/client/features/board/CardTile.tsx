@@ -1,8 +1,17 @@
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import { Check, Circle, StickyNote } from "lucide-react";
 import type { CardDto } from "../../../shared/api";
 
-export function CardTile({ card, onOpen }: { card: CardDto; onOpen: () => void }) {
+export function CardTile({
+  card,
+  onOpen,
+  onToggleComplete,
+}: {
+  card: CardDto;
+  onOpen: () => void;
+  onToggleComplete: () => void;
+}) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: card.id,
     data: { type: "card", columnId: card.columnId },
@@ -22,7 +31,6 @@ export function CardTile({ card, onOpen }: { card: CardDto; onOpen: () => void }
       onOpen();
       return;
     }
-    // Preserve dnd-kit keyboard drag activation (Space) and arrow handling.
     (listeners as Record<string, ((e: React.KeyboardEvent) => void) | undefined>)?.onKeyDown?.(e);
   }
 
@@ -34,10 +42,25 @@ export function CardTile({ card, onOpen }: { card: CardDto; onOpen: () => void }
       {...listeners}
       onKeyDown={onKeyDown}
       onClick={onOpen}
-      className={`mw-card${isDragging ? " mw-card--dragging" : ""}`}
-      aria-label={`Card: ${card.title}. Press Enter to open.`}
+      className={`mw-card${isDragging ? " mw-card--dragging" : ""}${card.completed ? " mw-card--done" : ""}`}
+      aria-label={`Card: ${card.title}${card.completed ? " (completed)" : ""}. Press Enter to open.`}
     >
-      <div className="mw-card__title">{card.title}</div>
+      <div className="mw-card__row">
+        <button
+          type="button"
+          className={`mw-check${card.completed ? " mw-check--on" : ""}`}
+          aria-label={card.completed ? "Mark as not complete" : "Mark as complete"}
+          aria-pressed={card.completed}
+          onPointerDown={(e) => e.stopPropagation()}
+          onClick={(e) => {
+            e.stopPropagation();
+            onToggleComplete();
+          }}
+        >
+          {card.completed ? <Check size={13} strokeWidth={3} /> : <Circle size={16} strokeWidth={1.75} />}
+        </button>
+        <div className="mw-card__title">{card.title}</div>
+      </div>
 
       {card.attachments.length > 0 && (
         <div className="mw-card__thumbs">
@@ -57,7 +80,7 @@ export function CardTile({ card, onOpen }: { card: CardDto; onOpen: () => void }
 
       {card.description.trim() && (
         <div className="mw-card__meta">
-          <span aria-hidden="true">≡</span> Notes
+          <StickyNote size={13} strokeWidth={1.75} aria-hidden="true" /> Notes
         </div>
       )}
     </div>

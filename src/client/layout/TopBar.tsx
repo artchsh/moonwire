@@ -1,7 +1,11 @@
 import { useEffect, useRef, useState } from "react";
+import { MoreHorizontal, Pencil, Trash2, Settings as SettingsIcon, UserRound, LogOut } from "lucide-react";
 import type { BoardDto } from "../../shared/api";
 import { Logo } from "../components/Logo";
+import { usePrompt } from "../components/ui";
 import { BoardSwitcher } from "./BoardSwitcher";
+
+const ICON = { size: 16, strokeWidth: 1.75 } as const;
 
 export function TopBar({
   boards,
@@ -28,15 +32,21 @@ export function TopBar({
   const [userMenu, setUserMenu] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const userRef = useRef<HTMLDivElement>(null);
+  const { prompt, element: promptEl } = usePrompt();
 
   useOutside(menuRef, () => setMenuOpen(false), menuOpen);
   useOutside(userRef, () => setUserMenu(false), userMenu);
 
-  function rename() {
+  async function rename() {
     if (!selectedBoard) return;
-    const next = window.prompt("Rename board", selectedBoard.name);
-    if (next && next.trim()) void onRenameBoard(selectedBoard, next.trim());
     setMenuOpen(false);
+    const next = await prompt({
+      title: "Rename board",
+      label: "Board name",
+      initialValue: selectedBoard.name,
+      confirmLabel: "Rename",
+    });
+    if (next) await onRenameBoard(selectedBoard, next);
   }
 
   return (
@@ -58,12 +68,12 @@ export function TopBar({
             aria-expanded={menuOpen}
             onClick={() => setMenuOpen((o) => !o)}
           >
-            ⋯
+            <MoreHorizontal {...ICON} />
           </button>
           {menuOpen && (
             <div className="mw-menu" role="menu" style={{ marginTop: 6 }}>
               <button className="mw-menu__item" role="menuitem" onClick={rename}>
-                Rename board
+                <Pencil {...ICON} /> Rename board
               </button>
               <button
                 className="mw-menu__item mw-menu__item--danger"
@@ -73,7 +83,7 @@ export function TopBar({
                   void onDeleteBoard(selectedBoard);
                 }}
               >
-                Delete board
+                <Trash2 {...ICON} /> Delete board
               </button>
             </div>
           )}
@@ -83,7 +93,7 @@ export function TopBar({
       <div className="mw-topbar__spacer" />
 
       <button className="mw-btn mw-btn--ghost mw-btn--sm" onClick={onOpenSettings}>
-        Settings
+        <SettingsIcon {...ICON} /> Settings
       </button>
 
       <div className="mw-switcher" ref={userRef}>
@@ -94,7 +104,7 @@ export function TopBar({
           aria-expanded={userMenu}
           onClick={() => setUserMenu((o) => !o)}
         >
-          ◐
+          <UserRound {...ICON} />
         </button>
         {userMenu && (
           <div className="mw-menu" role="menu" style={{ right: 0, marginTop: 6 }}>
@@ -102,11 +112,12 @@ export function TopBar({
               Signed in as {username}
             </div>
             <button className="mw-menu__item" role="menuitem" onClick={onLogout}>
-              Log out
+              <LogOut {...ICON} /> Log out
             </button>
           </div>
         )}
       </div>
+      {promptEl}
     </header>
   );
 }

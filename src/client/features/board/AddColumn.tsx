@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Plus } from "lucide-react";
 
 export function AddColumn({ onAdd }: { onAdd: (name: string) => void | Promise<void> }) {
   const [editing, setEditing] = useState(false);
@@ -34,7 +35,7 @@ export function AddColumn({ onAdd }: { onAdd: (name: string) => void | Promise<v
         />
       ) : (
         <button className="mw-add-tile" onClick={() => setEditing(true)}>
-          ＋ Add column
+          <Plus size={15} strokeWidth={1.75} /> Add column
         </button>
       )}
     </div>

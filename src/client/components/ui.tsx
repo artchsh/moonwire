@@ -8,6 +8,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { X } from "lucide-react";
 
 export function Skeleton({ height = 16, width = "100%" }: { height?: number; width?: number | string }) {
   return <div className="mw-skeleton" style={{ height, width }} aria-hidden="true" />;
@@ -79,7 +80,7 @@ export function Dialog({
               {title}
             </h2>
             <button className="mw-icon-btn" onClick={onClose} aria-label="Close dialog">
-              ✕
+              <X size={18} strokeWidth={1.75} />
             </button>
           </div>
         )}
@@ -178,4 +179,68 @@ export function useConfirm() {
   ) : null;
 
   return { confirm, element };
+}
+
+/** Custom single-field text prompt (replaces window.prompt). */
+export function usePrompt() {
+  const [state, setState] = useState<{
+    title: string;
+    label: string;
+    value: string;
+    confirmLabel: string;
+    resolve: (value: string | null) => void;
+  } | null>(null);
+
+  const prompt = useCallback(
+    (opts: { title: string; label: string; initialValue?: string; confirmLabel?: string }) =>
+      new Promise<string | null>((resolve) =>
+        setState({
+          title: opts.title,
+          label: opts.label,
+          value: opts.initialValue ?? "",
+          confirmLabel: opts.confirmLabel ?? "Save",
+          resolve,
+        }),
+      ),
+    [],
+  );
+
+  function finish(value: string | null) {
+    state?.resolve(value);
+    setState(null);
+  }
+
+  const element = state ? (
+    <Dialog title={state.title} onClose={() => finish(null)}>
+      <form
+        className="mw-stack"
+        onSubmit={(e) => {
+          e.preventDefault();
+          const trimmed = state.value.trim();
+          finish(trimmed || null);
+        }}
+      >
+        <div className="mw-field">
+          <label htmlFor="mw-prompt-input">{state.label}</label>
+          <input
+            id="mw-prompt-input"
+            className="mw-input"
+            autoFocus
+            value={state.value}
+            onChange={(e) => setState((s) => (s ? { ...s, value: e.target.value } : s))}
+          />
+        </div>
+        <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
+          <button type="button" className="mw-btn mw-btn--ghost" onClick={() => finish(null)}>
+            Cancel
+          </button>
+          <button type="submit" className="mw-btn mw-btn--primary" disabled={!state.value.trim()}>
+            {state.confirmLabel}
+          </button>
+        </div>
+      </form>
+    </Dialog>
+  ) : null;
+
+  return { prompt, element };
 }

@@ -40,6 +40,7 @@ export const restoreEnvelopeSchema = z
         boardId: z.string(),
         title: z.string(),
         description: z.string(),
+        completed: z.boolean().optional().default(false),
         position: z.number().int(),
         version: ver,
         createdAt: ts,

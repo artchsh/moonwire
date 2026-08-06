@@ -117,7 +117,7 @@ export async function updateCardGuarded(
   db: AppDatabase,
   id: string,
   version: number,
-  patch: Partial<Pick<CardRow, "title" | "description">>,
+  patch: Partial<Pick<CardRow, "title" | "description" | "completed">>,
 ): Promise<number> {
   const res = await db
     .update(card)

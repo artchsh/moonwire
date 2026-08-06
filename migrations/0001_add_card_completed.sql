@@ -1,0 +1,1 @@
+ALTER TABLE `card` ADD `completed` integer DEFAULT false NOT NULL;

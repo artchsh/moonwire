@@ -1,4 +1,5 @@
 import { useRef, useState } from "react";
+import { ImagePlus } from "lucide-react";
 import { api } from "../../api/client";
 import { useToast } from "../../components/ui";
 
@@ -57,7 +58,13 @@ export function ImageUploader({
         onClick={() => inputRef.current?.click()}
         disabled={status === "uploading"}
       >
-        {status === "uploading" ? "Uploading…" : "＋ Upload images"}
+        {status === "uploading" ? (
+          "Uploading…"
+        ) : (
+          <>
+            <ImagePlus size={15} strokeWidth={1.75} /> Upload images
+          </>
+        )}
       </button>
 
       {status === "uploading" && (

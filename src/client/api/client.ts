@@ -80,8 +80,11 @@ export const api = {
   createCard: (columnId: string, title: string, description?: string) =>
     request<CardDto>("POST", `/api/v1/columns/${columnId}/cards`, { title, description }),
   getCard: (id: string) => request<CardDto>("GET", `/api/v1/cards/${id}`),
-  updateCard: (id: string, version: number, patch: { title?: string; description?: string }) =>
-    request<CardDto>("PATCH", `/api/v1/cards/${id}`, { version, ...patch }),
+  updateCard: (
+    id: string,
+    version: number,
+    patch: { title?: string; description?: string; completed?: boolean },
+  ) => request<CardDto>("PATCH", `/api/v1/cards/${id}`, { version, ...patch }),
   moveCard: (
     id: string,
     version: number,

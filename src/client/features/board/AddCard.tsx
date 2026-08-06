@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { Plus } from "lucide-react";
 import { imageFilesFromClipboard } from "../attachments/clipboard";
 
 interface Pasted {
@@ -79,7 +80,7 @@ export function AddCard({
   if (!editing) {
     return (
       <button className="mw-add-tile" onClick={() => setEditing(true)}>
-        ＋ Add card
+        <Plus size={15} strokeWidth={1.75} /> Add card
       </button>
     );
   }

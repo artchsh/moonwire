@@ -2,10 +2,14 @@ import { useState } from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import { GripVertical, Trash2 } from "lucide-react";
 import type { ColumnWithCards, CardDto } from "../../../shared/api";
 import { CardTile } from "./CardTile";
 import { AddCard } from "./AddCard";
 import { Dialog, useConfirm } from "../../components/ui";
+import { Select } from "../../components/Select";
+
+const ICON = { size: 16, strokeWidth: 1.75 } as const;
 
 export function ColumnLane({
   column,
@@ -14,6 +18,7 @@ export function ColumnLane({
   onDelete,
   onAddCard,
   onOpenCard,
+  onToggleComplete,
 }: {
   column: ColumnWithCards;
   otherColumns: ColumnWithCards[];
@@ -21,6 +26,7 @@ export function ColumnLane({
   onDelete: (column: ColumnWithCards, relocateToColumnId?: string) => void | Promise<void>;
   onAddCard: (columnId: string, title: string, files?: File[]) => void | Promise<void>;
   onOpenCard: (card: CardDto) => void;
+  onToggleComplete: (card: CardDto) => void | Promise<void>;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: column.id,
@@ -71,7 +77,7 @@ export function ColumnLane({
           {...attributes}
           {...listeners}
         >
-          ⠿
+          <GripVertical {...ICON} />
         </button>
 
         {editing ? (
@@ -103,14 +109,19 @@ export function ColumnLane({
           {column.cards.length}
         </span>
         <button className="mw-icon-btn" aria-label={`Delete column ${column.name}`} onClick={requestDelete}>
-          🗑
+          <Trash2 {...ICON} />
         </button>
       </header>
 
       <SortableContext items={column.cards.map((c) => c.id)} strategy={verticalListSortingStrategy}>
         <div className="mw-column__cards">
           {column.cards.map((card) => (
-            <CardTile key={card.id} card={card} onOpen={() => onOpenCard(card)} />
+            <CardTile
+              key={card.id}
+              card={card}
+              onOpen={() => onOpenCard(card)}
+              onToggleComplete={() => onToggleComplete(card)}
+            />
           ))}
         </div>
       </SortableContext>
@@ -160,18 +171,13 @@ function RelocateDialog({
         ) : (
           <div className="mw-field">
             <label htmlFor="relocate">Move cards to</label>
-            <select
+            <Select
               id="relocate"
-              className="mw-select"
+              ariaLabel="Move cards to column"
               value={target}
-              onChange={(e) => setTarget(e.target.value)}
-            >
-              {targets.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
-              ))}
-            </select>
+              onChange={setTarget}
+              options={targets.map((c) => ({ value: c.id, label: c.name }))}
+            />
           </div>
         )}
         <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>

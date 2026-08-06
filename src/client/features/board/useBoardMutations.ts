@@ -96,7 +96,7 @@ export function useBoardMutations(state: BoardState, boardId: string) {
   );
 
   const updateCard = useCallback(
-    async (card: CardDto, patch: { title?: string; description?: string }): Promise<CardDto | null> => {
+    async (card: CardDto, patch: { title?: string; description?: string; completed?: boolean }): Promise<CardDto | null> => {
       try {
         const updated = await api.updateCard(card.id, card.version, patch);
         setSnapshot((s) => replaceCard(s, updated));
@@ -104,6 +104,20 @@ export function useBoardMutations(state: BoardState, boardId: string) {
       } catch (err) {
         await onConflict(err, "Could not save changes.");
         return null;
+      }
+    },
+    [setSnapshot, onConflict],
+  );
+
+  const toggleComplete = useCallback(
+    async (card: CardDto) => {
+      const next = !card.completed;
+      setSnapshot((s) => replaceCard(s, { ...card, completed: next })); // optimistic
+      try {
+        const updated = await api.updateCard(card.id, card.version, { completed: next });
+        setSnapshot((s) => replaceCard(s, updated));
+      } catch (err) {
+        await onConflict(err, "Could not update card.");
       }
     },
     [setSnapshot, onConflict],
@@ -159,6 +173,7 @@ export function useBoardMutations(state: BoardState, boardId: string) {
     addCard,
     updateCard,
     deleteCard,
+    toggleComplete,
     persistCardMove,
     persistColumnMove,
   };

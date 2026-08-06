@@ -21,6 +21,7 @@ export const updateCardSchema = z
   .object({
     title: z.string().trim().min(1).max(200).optional(),
     description: z.string().max(20_000).optional(),
+    completed: z.boolean().optional(),
     version,
   })
   .strict();

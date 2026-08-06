@@ -118,6 +118,7 @@ export function BoardScreen({ boardId }: { boardId: string }) {
                 onDelete={m.deleteColumn}
                 onAddCard={m.addCard}
                 onOpenCard={(card) => setOpenCardId(card.id)}
+                onToggleComplete={m.toggleComplete}
               />
             ))}
           </SortableContext>

@@ -569,6 +569,9 @@
 
 /* Empty / add controls */
 .mw-add-tile {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
   width: 100%;
   padding: 9px 12px;
   border: 1px dashed var(--mw-border-strong);
@@ -798,4 +801,137 @@
   padding: 10px;
   word-break: break-all;
   color: var(--mw-cyan);
+}
+
+/* ---------- Custom Select (replaces native <select>) ---------- */
+.mw-select-wrap {
+  position: relative;
+}
+.mw-select-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--mw-space-2);
+  width: 100%;
+  min-height: 38px;
+  padding: 8px 12px;
+  background: var(--mw-canvas);
+  border: 1px solid var(--mw-border);
+  border-radius: var(--mw-radius-sm);
+  color: var(--mw-text);
+  font: inherit;
+  font-size: 14px;
+  cursor: pointer;
+}
+.mw-select-btn:hover {
+  border-color: var(--mw-border-strong);
+}
+.mw-select-btn[aria-expanded="true"] {
+  border-color: var(--mw-accent);
+}
+.mw-select-list {
+  position: absolute;
+  z-index: 60;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  margin: 0;
+  padding: 6px;
+  list-style: none;
+  background: var(--mw-surface-raised);
+  border: 1px solid var(--mw-border-strong);
+  border-radius: var(--mw-radius);
+  box-shadow: var(--mw-shadow-2);
+}
+.mw-select-opt {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--mw-space-2);
+  padding: 8px 10px;
+  border-radius: var(--mw-radius-sm);
+  font-size: 13.5px;
+  color: var(--mw-text);
+  cursor: pointer;
+}
+.mw-select-opt--active {
+  background: var(--mw-surface-hover);
+}
+.mw-select-opt[aria-selected="true"] {
+  color: var(--mw-accent);
+}
+
+/* ---------- Card completion ---------- */
+.mw-card__row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+.mw-check {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  margin-top: 1px;
+  border-radius: 999px;
+  border: none;
+  background: transparent;
+  color: var(--mw-text-faint);
+  cursor: pointer;
+  transition: color var(--mw-duration) var(--mw-ease);
+}
+.mw-check:hover {
+  color: var(--mw-accent);
+}
+.mw-check--on {
+  background: var(--mw-accent);
+  color: var(--mw-accent-ink);
+}
+.mw-card--done {
+  opacity: 0.62;
+}
+.mw-card--done .mw-card__title {
+  text-decoration: line-through;
+  text-decoration-color: var(--mw-text-faint);
+  color: var(--mw-text-muted);
+}
+
+/* ---------- Card panel: scrim, title row, complete toggle ---------- */
+.mw-panel-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 44;
+  background: rgba(5, 6, 9, 0.5);
+}
+.mw-panel__title-row {
+  padding: var(--mw-space-2) var(--mw-space-4) 0;
+}
+.mw-complete-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 12px;
+  border: 1px solid var(--mw-border);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--mw-text-muted);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 550;
+  cursor: pointer;
+  transition:
+    background var(--mw-duration) var(--mw-ease),
+    color var(--mw-duration) var(--mw-ease),
+    border-color var(--mw-duration) var(--mw-ease);
+}
+.mw-complete-btn:hover {
+  border-color: var(--mw-border-strong);
+  color: var(--mw-text);
+}
+.mw-complete-btn--on {
+  background: rgba(227, 178, 100, 0.14);
+  border-color: transparent;
+  color: var(--mw-accent);
 }

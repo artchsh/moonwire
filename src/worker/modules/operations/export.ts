@@ -40,6 +40,7 @@ export async function buildExport(db: AppDatabase): Promise<ExportEnvelope> {
       boardId: c.boardId,
       title: c.title,
       description: c.description,
+      completed: c.completed,
       position: c.position,
       version: c.version,
       createdAt: c.createdAt,

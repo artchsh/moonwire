@@ -42,6 +42,7 @@ const toCardDto = (r: CardRow): Omit<CardDto, "attachments"> => ({
   boardId: r.boardId,
   title: r.title,
   description: r.description,
+  completed: r.completed,
   position: r.position,
   version: r.version,
   createdAt: r.createdAt,
@@ -343,6 +344,7 @@ export async function createCard(
     boardId: column.boardId,
     title: input.title,
     description: input.description ?? "",
+    completed: false,
     position: nextPosition(siblings),
     version: 1,
     createdAt: now,
@@ -356,7 +358,7 @@ export async function updateCard(
   db: AppDatabase,
   id: string,
   version: number,
-  patch: { title?: string; description?: string },
+  patch: { title?: string; description?: string; completed?: boolean },
 ): Promise<CardDto> {
   const existing = await repo.getCard(db, id);
   if (!existing) throw ApiError.notFound("Card");

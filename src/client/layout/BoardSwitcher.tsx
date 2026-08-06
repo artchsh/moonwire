@@ -1,5 +1,8 @@
 import { useEffect, useRef, useState } from "react";
+import { ChevronDown, Check, Plus } from "lucide-react";
 import type { BoardDto } from "../../shared/api";
+
+const ICON = { size: 16, strokeWidth: 1.75 } as const;
 
 export function BoardSwitcher({
   boards,
@@ -52,7 +55,7 @@ export function BoardSwitcher({
         onClick={() => setOpen((o) => !o)}
       >
         <span>{selectedBoard?.name ?? "Select a board"}</span>
-        <span aria-hidden="true">▾</span>
+        <ChevronDown {...ICON} aria-hidden="true" />
       </button>
 
       {open && (
@@ -68,7 +71,9 @@ export function BoardSwitcher({
                 setOpen(false);
               }}
             >
-              <span aria-hidden="true">{b.id === selectedBoard?.id ? "●" : "○"}</span>
+              <span style={{ width: 16, display: "inline-flex" }} aria-hidden="true">
+                {b.id === selectedBoard?.id && <Check {...ICON} />}
+              </span>
               {b.name}
             </button>
           ))}
@@ -88,7 +93,7 @@ export function BoardSwitcher({
             </form>
           ) : (
             <button className="mw-menu__item" onClick={() => setCreating(true)}>
-              <span aria-hidden="true">＋</span> New board
+              <Plus {...ICON} /> New board
             </button>
           )}
         </div>

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { X } from "lucide-react";
 import type { AttachmentDto } from "../../../shared/api";
 import { api } from "../../api/client";
 import { ImageViewer } from "./ImageViewer";
@@ -51,7 +52,7 @@ export function AttachmentGallery({
               aria-label={`View ${a.filename}`}
             />
             <button className="mw-gallery__del" aria-label={`Delete ${a.filename}`} onClick={() => void remove(a)}>
-              ✕
+              <X size={15} strokeWidth={2} />
             </button>
           </div>
         ))}

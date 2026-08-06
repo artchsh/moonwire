@@ -73,6 +73,7 @@ export const card = sqliteTable(
       .references(() => board.id, { onDelete: "cascade" }),
     title: text("title").notNull(),
     description: text("description").notNull().default(""),
+    completed: integer("completed", { mode: "boolean" }).notNull().default(false),
     position: integer("position").notNull(),
     version: integer("version").notNull().default(1),
     createdAt: integer("created_at").notNull(),

@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
+import { Copy, Download } from "lucide-react";
 import type { AgentTokenDto, CreatedAgentTokenDto, Scope, StorageInfo } from "../../shared/api";
 import { api } from "../api/client";
 import { Dialog, useToast, useConfirm } from "../components/ui";
+import { Select } from "../components/Select";
 
 export function SettingsDialog({ onClose }: { onClose: () => void }) {
   const [tokens, setTokens] = useState<AgentTokenDto[] | null>(null);
@@ -76,7 +78,7 @@ export function SettingsDialog({ onClose }: { onClose: () => void }) {
                     toast.push("Token copied");
                   }}
                 >
-                  Copy
+                  <Copy size={15} strokeWidth={1.75} /> Copy
                 </button>
                 <button className="mw-btn mw-btn--ghost mw-btn--sm" onClick={() => setCreated(null)}>
                   Done
@@ -98,15 +100,16 @@ export function SettingsDialog({ onClose }: { onClose: () => void }) {
             </div>
             <div className="mw-field">
               <label htmlFor="tok-scope">Scope</label>
-              <select
+              <Select
                 id="tok-scope"
-                className="mw-select"
+                ariaLabel="Token scope"
                 value={scope}
-                onChange={(e) => setScope(e.target.value as Scope)}
-              >
-                <option value="write">Read &amp; write</option>
-                <option value="read">Read only</option>
-              </select>
+                onChange={(v) => setScope(v as Scope)}
+                options={[
+                  { value: "write", label: "Read & write" },
+                  { value: "read", label: "Read only" },
+                ]}
+              />
             </div>
             <button className="mw-btn mw-btn--primary" disabled={busy || !name.trim()}>
               Create
@@ -155,7 +158,7 @@ export function SettingsDialog({ onClose }: { onClose: () => void }) {
               downloadJson(data, "moonwire-export.json");
             }}
           >
-            Export all data (JSON)
+            <Download size={15} strokeWidth={1.75} /> Export all data (JSON)
           </button>
         </section>
       </div>

@@ -96,6 +96,7 @@ boardsRouter.patch("/cards/:id", requireWrite, async (c) => {
     await service.updateCard(c.var.db, c.req.param("id"), body.version, {
       title: body.title,
       description: body.description,
+      completed: body.completed,
     }),
   );
 });

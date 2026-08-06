@@ -104,6 +104,7 @@ export interface CardDto {
   boardId: string;
   title: string;
   description: string;
+  completed: boolean;
   position: number;
   version: number;
   createdAt: number;
@@ -142,6 +143,7 @@ export interface CreateCardRequest {
 export interface UpdateCardRequest {
   title?: string;
   description?: string;
+  completed?: boolean;
   version: number;
 }
 
