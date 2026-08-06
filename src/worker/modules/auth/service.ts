@@ -53,7 +53,7 @@ export async function verifyLogin(
   const admin = rows[0];
   if (!admin) {
     // Perform a dummy hash to reduce username-enumeration timing signal.
-    await verifyPassword(password, "pbkdf2$sha256$210000$AAAAAAAAAAAAAAAAAAAAAA==$AAAA");
+    await verifyPassword(password, "pbkdf2$sha256$100000$AAAAAAAAAAAAAAAAAAAAAA==$AAAA");
     return null;
   }
   const ok = await verifyPassword(password, admin.passwordHash);

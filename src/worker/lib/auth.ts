@@ -8,7 +8,10 @@ import type { HonoEnv, Principal } from "../types";
 export const SESSION_COOKIE = "mw_session";
 
 const encoder = new TextEncoder();
-const PBKDF2_ITERATIONS = 210_000;
+// The Workers runtime caps PBKDF2 at 100k iterations, so this is the ceiling.
+// The iteration count is stored in each hash, so it can be raised later if the
+// platform limit changes (verify honours whatever a stored hash used).
+const PBKDF2_ITERATIONS = 100_000;
 const PBKDF2_KEY_LEN = 32; // bytes
 
 // ---- base64 helpers (Workers has btoa/atob) ----

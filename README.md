@@ -231,7 +231,9 @@ Codes: `VALIDATION_ERROR` (400), `UNAUTHENTICATED` (401), `FORBIDDEN` (403),
 
 ## Security notes
 
-- Passwords hashed with PBKDF2-SHA256 (210k iterations) via WebCrypto.
+- Passwords hashed with PBKDF2-SHA256 via WebCrypto at 100k iterations (the
+  Workers runtime ceiling); the count is stored per-hash so it can be raised if
+  the platform limit changes.
 - Session cookie is `HttpOnly`, `SameSite=Strict`, `Secure` (configurable), with a
   server-side expiry; cookie-authenticated mutations are origin-checked.
 - Agent tokens are stored only as SHA-256 hashes; the plaintext is shown once.
