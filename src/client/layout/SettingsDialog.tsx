@@ -65,7 +65,7 @@ export function SettingsDialog({ onClose }: { onClose: () => void }) {
           {created && (
             <div className="mw-stack" style={{ marginBottom: 12 }}>
               <p style={{ fontSize: 13, margin: 0 }}>
-                Copy this token now — it is shown <strong>only once</strong>.
+                Copy this token now. It is shown <strong>only once</strong>.
               </p>
               <code className="mw-code">{created.token}</code>
               <div style={{ display: "flex", gap: 8 }}>

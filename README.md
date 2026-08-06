@@ -122,14 +122,14 @@ Expected health response:
    ```
 
 5. **Set the production origin.** In `wrangler.jsonc` `vars`, set `APP_ORIGIN`
-   to your public origin and `COOKIE_SECURE` to `"true"` (HTTPS in production).
-   `APP_ORIGIN` is the CSRF allow-list for cookie-authenticated mutations and
-   accepts a comma-separated list. **Get this right before first-run setup** — if
-   it doesn't match the origin in the browser, the setup POST is rejected (403).
+   to your public origin. It is the CSRF allow-list for cookie-authenticated
+   mutations and accepts a comma-separated list. **Get this right before
+   first-run setup** — if it doesn't match the origin in the browser, the setup
+   POST is rejected (403).
 
-   These `vars` apply to local dev too, so `.dev.vars` overrides them for
-   `wrangler dev` (`APP_ORIGIN=http://localhost:8787`, `COOKIE_SECURE=false`) —
-   keep those local values there so login works over plain http.
+   Local dev needs no override: `localhost` origins are always allowed, and the
+   session cookie is only marked `Secure` when actually served over HTTPS (so it
+   works on `http://localhost` in dev and stays Secure in production).
 
 6. **Custom domain (optional).** Add a route so the Worker serves your domain
    (the zone must be on the same Cloudflare account; wrangler provisions the

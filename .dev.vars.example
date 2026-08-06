@@ -4,8 +4,5 @@
 # Must be at least 16 characters. Generate a strong random value, e.g.:
 #   node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))"
 SESSION_SECRET=dev-only-secret-change-me-0123456789
-
-# Local overrides for the production values in wrangler.jsonc `vars`.
-# wrangler dev prefers .dev.vars, so local login works over plain http.
-APP_ORIGIN=http://localhost:8787
-COOKIE_SECURE=false
+# APP_ORIGIN / cookie Secure are handled automatically for local dev:
+# localhost origins are always allowed and the cookie is only marked Secure over HTTPS.

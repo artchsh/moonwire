@@ -12,7 +12,7 @@ export function useBoardMutations(state: BoardState, boardId: string) {
   const onConflict = useCallback(
     async (err: unknown, fallback: string) => {
       if (err instanceof ApiClientError && err.status === 409) {
-        toast.push("Loaded newer board state — please retry.", "error");
+        toast.push("Loaded newer board state. Please retry.", "error");
       } else {
         toast.push(fallback, "error");
       }

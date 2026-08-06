@@ -31,8 +31,8 @@ body::before {
   inset: 0;
   pointer-events: none;
   background:
-    radial-gradient(1100px 600px at 12% -10%, rgba(56, 225, 214, 0.06), transparent 60%),
-    radial-gradient(900px 600px at 100% 0%, rgba(139, 124, 255, 0.05), transparent 55%);
+    radial-gradient(1200px 640px at 8% -12%, rgba(227, 178, 100, 0.05), transparent 60%),
+    radial-gradient(900px 620px at 100% 0%, rgba(147, 162, 200, 0.045), transparent 55%);
   z-index: 0;
 }
 
@@ -63,7 +63,8 @@ a {
 }
 
 ::selection {
-  background: rgba(56, 225, 214, 0.25);
+  background: rgba(227, 178, 100, 0.28);
+  color: var(--mw-text);
 }
 
 /* Thin, dark scrollbars that match the canvas. */

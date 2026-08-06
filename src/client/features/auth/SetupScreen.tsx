@@ -34,7 +34,7 @@ export function SetupScreen({ onDone }: { onDone: (s: SessionInfo) => void }) {
         <div>
           <h1 className="mw-auth__title">Set up your board</h1>
           <p className="mw-auth__sub">
-            Create the administrator account. This runs once — keep the credentials safe.
+            Create the administrator account. This runs once, so keep the credentials safe.
           </p>
         </div>
 

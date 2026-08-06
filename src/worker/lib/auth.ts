@@ -103,11 +103,14 @@ export async function createAgentTokenSecret(): Promise<{ plaintext: string; has
 // ---- session cookie ----
 
 export function issueSessionCookie(c: Context<HonoEnv>, token: string): void {
+  // Mark the cookie Secure only when actually served over HTTPS, so it works on
+  // http://localhost in dev and is always Secure behind Cloudflare in production.
+  const secure = new URL(c.req.url).protocol === "https:";
   setCookie(c, SESSION_COOKIE, token, {
     httpOnly: true,
     sameSite: "Strict",
     path: "/",
-    secure: c.var.config.cookieSecure,
+    secure,
     maxAge: Math.floor(c.var.config.sessionTtlMs / 1000),
   });
 }
@@ -176,7 +179,14 @@ export function enforceOrigin(c: Context<HonoEnv>): void {
   // Bearer (agent) requests do not carry cookies, so CSRF does not apply.
   if (c.req.header("Authorization")?.startsWith("Bearer ")) return;
   const origin = c.req.header("Origin");
-  if (!origin || !c.var.config.allowedOrigins.includes(origin)) {
+  if (!origin) throw new ApiError("FORBIDDEN", "Cross-origin request rejected");
+  let host: string;
+  try {
+    host = new URL(origin).host;
+  } catch {
+    throw new ApiError("FORBIDDEN", "Cross-origin request rejected");
+  }
+  if (!c.var.config.allowedHosts.includes(host)) {
     throw new ApiError("FORBIDDEN", "Cross-origin request rejected");
   }
 }

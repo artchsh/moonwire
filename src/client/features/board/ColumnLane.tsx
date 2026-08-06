@@ -156,7 +156,7 @@ function RelocateDialog({
           {column.cards.length === 1 ? "" : "s"}. Choose a column to move them to before deleting.
         </p>
         {targets.length === 0 ? (
-          <p className="mw-field__error">Create another column first — cards need somewhere to go.</p>
+          <p className="mw-field__error">Create another column first. Cards need somewhere to go.</p>
         ) : (
           <div className="mw-field">
             <label htmlFor="relocate">Move cards to</label>

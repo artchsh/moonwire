@@ -8,10 +8,11 @@
   gap: var(--mw-space-2);
   padding: 8px 14px;
   min-height: 36px;
-  border: 1px solid transparent;
+  border: 1px solid var(--mw-border);
   border-radius: var(--mw-radius);
   background: var(--mw-surface-raised);
   color: var(--mw-text);
+  box-shadow: var(--mw-highlight);
   font-size: 14px;
   font-weight: 550;
   cursor: pointer;
@@ -32,12 +33,14 @@
 }
 
 .mw-btn--primary {
-  background: var(--mw-cyan);
-  color: var(--mw-cyan-ink);
+  background: var(--mw-accent);
+  border-color: transparent;
+  color: var(--mw-accent-ink);
   font-weight: 650;
+  box-shadow: 0 6px 18px rgba(227, 178, 100, 0.18);
 }
 .mw-btn--primary:hover {
-  background: var(--mw-cyan-strong);
+  background: var(--mw-accent-strong);
 }
 .mw-btn--ghost {
   background: transparent;
@@ -389,9 +392,10 @@
   background: var(--mw-surface);
   border: 1px solid var(--mw-border);
   border-radius: var(--mw-radius-lg);
+  box-shadow: var(--mw-highlight);
 }
 .mw-column--over {
-  border-color: var(--mw-cyan);
+  border-color: var(--mw-accent);
 }
 .mw-column__head {
   display: flex;
@@ -415,9 +419,13 @@
   border-color: var(--mw-border);
 }
 .mw-column__count {
-  font-size: 12px;
+  font-family: var(--mw-font-mono);
+  font-size: 11.5px;
   color: var(--mw-text-faint);
   font-variant-numeric: tabular-nums;
+  padding: 1px 7px;
+  border: 1px solid var(--mw-border);
+  border-radius: 999px;
 }
 .mw-column__cards {
   flex: 1;
@@ -442,14 +450,16 @@
   padding: 10px 12px;
   color: var(--mw-text);
   cursor: pointer;
-  box-shadow: var(--mw-shadow-1);
+  box-shadow: var(--mw-shadow-1), var(--mw-highlight);
   transition:
     border-color var(--mw-duration) var(--mw-ease),
-    background var(--mw-duration) var(--mw-ease);
+    background var(--mw-duration) var(--mw-ease),
+    transform var(--mw-duration) var(--mw-ease);
 }
 .mw-card:hover {
   border-color: var(--mw-border-strong);
   background: var(--mw-surface-hover);
+  transform: translateY(-1px);
 }
 .mw-card--dragging {
   opacity: 0.5;
@@ -772,12 +782,12 @@
   letter-spacing: 0.03em;
 }
 .mw-badge--read {
-  background: rgba(139, 124, 255, 0.16);
-  color: var(--mw-violet);
+  background: rgba(147, 162, 200, 0.16);
+  color: var(--mw-moon);
 }
 .mw-badge--write {
-  background: rgba(56, 225, 214, 0.16);
-  color: var(--mw-cyan);
+  background: rgba(227, 178, 100, 0.16);
+  color: var(--mw-accent);
 }
 .mw-code {
   font-family: var(--mw-font-mono);

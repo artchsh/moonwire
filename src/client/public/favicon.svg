@@ -1,8 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
   <defs>
     <linearGradient id="g" x1="5" y1="4" x2="27" y2="28" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#eef2fb"/>
-      <stop offset="1" stop-color="#38e1d6"/>
+      <stop offset="0" stop-color="#f2f0ea"/>
+      <stop offset="1" stop-color="#e3b264"/>
     </linearGradient>
     <mask id="m">
       <rect width="32" height="32" fill="black"/>
@@ -10,6 +10,6 @@
       <circle cx="22" cy="12" r="9.5" fill="black"/>
     </mask>
   </defs>
-  <rect width="32" height="32" rx="7" fill="#0a0e17"/>
+  <rect width="32" height="32" rx="7" fill="#0d0e13"/>
   <rect width="32" height="32" rx="7" fill="url(#g)" mask="url(#m)"/>
 </svg>
