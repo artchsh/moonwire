@@ -1,0 +1,67 @@
+/*
+ * Moonwire visual system — a restrained nocturnal palette.
+ * Deep blue-black canvas, elevated graphite surfaces, moon-white text,
+ * one electric cyan action, one violet focus, one destructive red.
+ * No neon glow, no ornamental cyberpunk chrome.
+ */
+:root {
+  /* Canvas & surfaces */
+  --mw-canvas: #0a0e17;
+  --mw-surface: #121824;
+  --mw-surface-raised: #1a2130;
+  --mw-surface-hover: #212a3b;
+  --mw-border: #273044;
+  --mw-border-strong: #384463;
+
+  /* Text */
+  --mw-text: #eef2fb; /* moon white */
+  --mw-text-muted: #9aa6be; /* steel */
+  --mw-text-faint: #5f6b84;
+
+  /* Accents */
+  --mw-cyan: #38e1d6;
+  --mw-cyan-strong: #5cf2e8;
+  --mw-cyan-ink: #04120f;
+  --mw-violet: #8b7cff;
+  --mw-danger: #ff6b7a;
+  --mw-danger-surface: #2a141a;
+
+  /* Focus ring (violet) */
+  --mw-focus: var(--mw-violet);
+
+  /* Spacing rhythm (4 / 8) */
+  --mw-space-1: 4px;
+  --mw-space-2: 8px;
+  --mw-space-3: 12px;
+  --mw-space-4: 16px;
+  --mw-space-5: 24px;
+  --mw-space-6: 32px;
+
+  /* Radii (restrained 10–14) */
+  --mw-radius-sm: 8px;
+  --mw-radius: 10px;
+  --mw-radius-lg: 14px;
+
+  /* Elevation */
+  --mw-shadow-1: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --mw-shadow-2: 0 8px 24px rgba(0, 0, 0, 0.45);
+  --mw-shadow-panel: 0 16px 48px rgba(0, 0, 0, 0.55);
+
+  /* Typography */
+  --mw-font: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+  /* Characterful humanist-grotesque display face, self-hosted. Used with
+     restraint for the wordmark and headings; body stays on the system stack. */
+  --mw-font-display: "Bricolage Grotesque Variable", var(--mw-font);
+  --mw-font-mono: ui-monospace, "SF Mono", "Cascadia Code", "JetBrains Mono",
+    Menlo, Consolas, monospace;
+
+  --mw-duration: 140ms;
+  --mw-ease: cubic-bezier(0.2, 0, 0.2, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --mw-duration: 0ms;
+  }
+}

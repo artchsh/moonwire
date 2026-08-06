@@ -1,0 +1,6 @@
+# Local development secrets for `wrangler dev`. Copy to .dev.vars (gitignored).
+# In production set these with `wrangler secret put SESSION_SECRET`.
+
+# Must be at least 16 characters. Generate a strong random value, e.g.:
+#   node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))"
+SESSION_SECRET=dev-only-secret-change-me-0123456789
