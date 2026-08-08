@@ -6,6 +6,12 @@
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "preview"],
       "port": 8787
+    },
+    {
+      "name": "moonwire-alt",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "preview:alt"],
+      "port": 8899
     }
   ]
 }

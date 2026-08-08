@@ -86,6 +86,7 @@ export function buildOpenApi() {
         ...operation("post", { summary: "Create a board", scope: "write", requestBody: true }),
       },
       "/api/v1/boards/{id}/snapshot": operation("get", { summary: "Full board snapshot (columns + cards + attachments)", scope: "read" }),
+      "/api/v1/boards/{id}/events": operation("get", { summary: "Change log since ?since=<revision>; resync=true means refetch the snapshot", scope: "read" }),
       "/api/v1/boards/{id}": {
         ...operation("patch", { summary: "Rename a board (version-checked)", scope: "write", requestBody: true }),
         ...operation("delete", { summary: "Delete a board and its contents", scope: "write" }),

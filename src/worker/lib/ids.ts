@@ -10,7 +10,8 @@ export type IdPrefix =
   | "board"
   | "col"
   | "card"
-  | "att";
+  | "att"
+  | "evt";
 
 export function createId(prefix: IdPrefix): string {
   return `${prefix}_${ulid()}`;

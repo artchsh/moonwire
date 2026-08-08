@@ -3,6 +3,8 @@ import type { Context } from "hono";
 import type { HonoEnv } from "../../types";
 import { requireRead, requireWrite } from "../../lib/auth";
 import { ApiError } from "../../lib/errors";
+import { actorFromHeader, emitBoardEvents } from "../../lib/events";
+import { getCardWithAttachments } from "../boards/service";
 import * as service from "./service";
 import type { UploadFile } from "./service";
 import { getObject } from "./storage";
@@ -35,15 +37,26 @@ attachmentsRouter.post("/cards/:cardId/attachments", requireWrite, async (c) => 
     files,
     c.var.config,
   );
+  if (result.attachments.length > 0) {
+    const card = await getCardWithAttachments(c.var.db, c.req.param("cardId"));
+    await emitBoardEvents(c.var.db, card.boardId, actorId(c), [{ type: "card.updated", card }]);
+  }
   // 207-ish semantics: 201 when anything succeeded, 400 when everything failed.
   const status = result.attachments.length > 0 ? 201 : 400;
   return c.json(result, status);
 });
 
 attachmentsRouter.delete("/attachments/:id", requireWrite, async (c) => {
+  const row = await service.getAttachment(c.var.db, c.req.param("id"));
   await service.deleteAttachment(c.var.db, c.env.UPLOADS, c.req.param("id"));
+  const card = await getCardWithAttachments(c.var.db, row.cardId);
+  await emitBoardEvents(c.var.db, card.boardId, actorId(c), [{ type: "card.updated", card }]);
   return c.body(null, 204);
 });
+
+function actorId(c: Context<HonoEnv>): string | null {
+  return actorFromHeader(c.req.header("x-client-id"));
+}
 
 // Original bytes. Read scope is enough (agents may download images).
 attachmentsRouter.get("/attachments/:id/content", requireRead, streamAttachment);

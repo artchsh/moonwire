@@ -129,7 +129,40 @@ export interface ColumnWithCards extends ColumnDto {
 }
 
 export interface BoardSnapshot extends BoardDto {
+  /** Sync-stream position this snapshot reflects; pass as `since` when polling events. */
+  revision: number;
   columns: ColumnWithCards[];
+}
+
+// ---- Sync events ----
+
+/**
+ * One entry in a board's change log. Payloads carry full DTOs so clients apply
+ * them by replacement; `board.refresh` means "too much changed, refetch the
+ * snapshot" (bulk relocation, position rebalance, restore).
+ */
+export type BoardEventPayload =
+  | { type: "board.updated"; board: BoardDto }
+  | { type: "board.refresh" }
+  | { type: "column.created"; column: ColumnDto }
+  | { type: "column.updated"; column: ColumnDto }
+  | { type: "column.deleted"; columnId: string }
+  | { type: "card.created"; card: CardDto }
+  | { type: "card.updated"; card: CardDto }
+  | { type: "card.deleted"; cardId: string };
+
+export type BoardEventDto = BoardEventPayload & {
+  revision: number;
+  /** X-Client-Id of the originating tab, so that tab can skip its own echo. */
+  actorId: string | null;
+  at: number;
+};
+
+export interface BoardEventsResponse {
+  revision: number;
+  events: BoardEventDto[];
+  /** True when `since` can no longer be served incrementally — refetch the snapshot. */
+  resync?: boolean;
 }
 
 // Request bodies

@@ -1,4 +1,4 @@
-import { sqliteTable, text, integer, index } from "drizzle-orm/sqlite-core";
+import { sqliteTable, text, integer, index, uniqueIndex } from "drizzle-orm/sqlite-core";
 
 // All timestamps are integer epoch milliseconds.
 // All ids are prefixed ULIDs (see lib/ids.ts), except session ids which are the
@@ -39,10 +39,35 @@ export const board = sqliteTable(
     name: text("name").notNull(),
     position: integer("position").notNull(),
     version: integer("version").notNull().default(1),
+    // Monotonic change counter for the board's sync event stream. Bumped once
+    // per emitted board_event; clients poll events with their last-seen value.
+    revision: integer("revision").notNull().default(0),
     createdAt: integer("created_at").notNull(),
     updatedAt: integer("updated_at").notNull(),
   },
   (t) => [index("board_position_idx").on(t.position)],
+);
+
+/**
+ * Append-only change log per board, consumed by polling clients. `revision` is
+ * dense (1, 2, 3...) within a board; a gap on read means the tail was pruned
+ * and the client must refetch the snapshot.
+ */
+export const boardEvent = sqliteTable(
+  "board_event",
+  {
+    id: text("id").primaryKey(),
+    boardId: text("board_id")
+      .notNull()
+      .references(() => board.id, { onDelete: "cascade" }),
+    revision: integer("revision").notNull(),
+    /** X-Client-Id of the originating browser tab; lets that tab skip its own echo. */
+    actorId: text("actor_id"),
+    type: text("type").notNull(),
+    payload: text("payload").notNull(),
+    createdAt: integer("created_at").notNull(),
+  },
+  (t) => [uniqueIndex("board_event_board_revision_idx").on(t.boardId, t.revision)],
 );
 
 export const boardColumn = sqliteTable(
@@ -102,6 +127,7 @@ export const attachment = sqliteTable(
 );
 
 export type AdminRow = typeof admin.$inferSelect;
+export type BoardEventRow = typeof boardEvent.$inferSelect;
 export type SessionRow = typeof session.$inferSelect;
 export type AgentTokenRow = typeof agentToken.$inferSelect;
 export type BoardRow = typeof board.$inferSelect;

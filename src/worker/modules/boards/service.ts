@@ -3,6 +3,7 @@ import type { AppDatabase } from "../../db/client";
 import { createId } from "../../lib/ids";
 import { ApiError } from "../../lib/errors";
 import { ORDER_GAP, positionBetween, rebalancePositions } from "../../lib/ordering";
+import { emitBoardEvents } from "../../lib/events";
 import { toAttachmentDto } from "../attachments/dto";
 import type {
   BoardDto,
@@ -127,6 +128,7 @@ export async function createBoard(db: AppDatabase, name: string): Promise<BoardD
     name,
     position: nextPosition(siblings),
     version: 1,
+    revision: 0,
     createdAt: now,
     updatedAt: now,
   };
@@ -283,6 +285,8 @@ export async function moveColumn(
           .where(eq(boardColumn.id, p.id)),
       ),
     );
+    // Sibling positions changed without individual events — everyone refetches.
+    await emitBoardEvents(db, existing.boardId, null, [{ type: "board.refresh" }]);
   }
   return toColumnDto((await repo.getColumn(db, id))!);
 }
@@ -291,7 +295,7 @@ export async function deleteColumn(
   db: AppDatabase,
   id: string,
   relocateToColumnId?: string,
-): Promise<void> {
+): Promise<{ boardId: string; relocated: boolean }> {
   const existing = await repo.getColumn(db, id);
   if (!existing) throw ApiError.notFound("Column");
   const cards = await repo.listCardsInColumn(db, id);
@@ -325,6 +329,7 @@ export async function deleteColumn(
   }
 
   await db.delete(boardColumn).where(eq(boardColumn.id, id));
+  return { boardId: existing.boardId, relocated: cards.length > 0 };
 }
 
 // ============================ Cards ============================
@@ -410,6 +415,8 @@ export async function moveCard(
           .where(eq(card.id, p.id)),
       ),
     );
+    // Sibling positions changed without individual events — everyone refetches.
+    await emitBoardEvents(db, existing.boardId, null, [{ type: "board.refresh" }]);
   }
   return withAttachments(db, (await repo.getCard(db, id))!);
 }
@@ -418,7 +425,7 @@ export async function deleteCard(
   db: AppDatabase,
   bucket: R2Bucket,
   id: string,
-): Promise<void> {
+): Promise<{ boardId: string }> {
   const existing = await repo.getCard(db, id);
   if (!existing) throw ApiError.notFound("Card");
   const keys = await repo.attachmentKeysForCards(db, [id]);
@@ -427,6 +434,7 @@ export async function deleteCard(
     db.delete(card).where(eq(card.id, id)),
   ]);
   await deleteObjects(bucket, keys);
+  return { boardId: existing.boardId };
 }
 
 // ============================ Snapshot / helpers ============================
@@ -466,7 +474,7 @@ export async function getSnapshot(db: AppDatabase, boardId: string): Promise<Boa
     cards: cardsByColumn.get(col.id) ?? [],
   }));
 
-  return { ...toBoardDto(boardRow), columns: columnDtos };
+  return { ...toBoardDto(boardRow), revision: boardRow.revision, columns: columnDtos };
 }
 
 async function deleteObjects(bucket: R2Bucket, keys: string[]): Promise<void> {
