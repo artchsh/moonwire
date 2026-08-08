@@ -10,7 +10,7 @@ import {
   requireAdmin,
   resolvePrincipal,
 } from "../../lib/auth";
-import { setupSchema, loginSchema, createTokenSchema } from "./schemas";
+import { setupSchema, loginSchema, createTokenSchema, createUserSchema } from "./schemas";
 import * as service from "./service";
 import type { SessionInfo } from "../../../shared/api";
 
@@ -58,6 +58,21 @@ authRouter.post("/auth/logout", async (c) => {
   const cookie = getCookie(c, SESSION_COOKIE);
   if (cookie) await service.destroySession(c.var.db, cookie);
   clearSessionCookie(c);
+  return c.body(null, 204);
+});
+
+authRouter.get("/users", requireAdmin, async (c) => {
+  return c.json({ users: await service.listUsers(c.var.db) });
+});
+
+authRouter.post("/users", requireAdmin, async (c) => {
+  const body = createUserSchema.parse(await c.req.json());
+  const user = await service.createUser(c.var.db, body.username, body.password);
+  return c.json(user, 201);
+});
+
+authRouter.delete("/users/:id", requireAdmin, async (c) => {
+  await service.deleteUser(c.var.db, c.req.param("id"), c.var.principal!.id);
   return c.body(null, 204);
 });
 

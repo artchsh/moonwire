@@ -100,7 +100,9 @@ export function Shell({ username, onLogout }: { username: string; onLogout: () =
         </div>
       )}
 
-      {settingsOpen && <SettingsDialog onClose={() => setSettingsOpen(false)} />}
+      {settingsOpen && (
+        <SettingsDialog currentUsername={username} onClose={() => setSettingsOpen(false)} />
+      )}
       {confirmEl}
     </div>
   );

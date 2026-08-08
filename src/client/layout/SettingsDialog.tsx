@@ -1,11 +1,27 @@
 import { useEffect, useState } from "react";
 import { Copy, Download } from "lucide-react";
-import type { AgentTokenDto, CreatedAgentTokenDto, Scope, StorageInfo } from "../../shared/api";
-import { api } from "../api/client";
+import type {
+  AgentTokenDto,
+  CreatedAgentTokenDto,
+  Scope,
+  StorageInfo,
+  UserDto,
+} from "../../shared/api";
+import { api, ApiClientError } from "../api/client";
 import { Dialog, useToast, useConfirm } from "../components/ui";
 import { Select } from "../components/Select";
 
-export function SettingsDialog({ onClose }: { onClose: () => void }) {
+export function SettingsDialog({
+  currentUsername,
+  onClose,
+}: {
+  currentUsername: string;
+  onClose: () => void;
+}) {
+  const [users, setUsers] = useState<UserDto[] | null>(null);
+  const [newUsername, setNewUsername] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [userBusy, setUserBusy] = useState(false);
   const [tokens, setTokens] = useState<AgentTokenDto[] | null>(null);
   const [storage, setStorage] = useState<StorageInfo | null>(null);
   const [name, setName] = useState("");
@@ -16,7 +32,12 @@ export function SettingsDialog({ onClose }: { onClose: () => void }) {
   const { confirm, element: confirmEl } = useConfirm();
 
   async function reload() {
-    const [{ tokens }, storage] = await Promise.all([api.listTokens(), api.storage()]);
+    const [{ users }, { tokens }, storage] = await Promise.all([
+      api.listUsers(),
+      api.listTokens(),
+      api.storage(),
+    ]);
+    setUsers(users);
     setTokens(tokens);
     setStorage(storage);
   }
@@ -24,6 +45,47 @@ export function SettingsDialog({ onClose }: { onClose: () => void }) {
   useEffect(() => {
     void reload();
   }, []);
+
+  async function createUser(e: React.FormEvent) {
+    e.preventDefault();
+    if (!newUsername.trim() || !newPassword) return;
+    setUserBusy(true);
+    try {
+      await api.createUser(newUsername.trim(), newPassword);
+      setNewUsername("");
+      setNewPassword("");
+      await reload();
+      toast.push("User created");
+    } catch (err) {
+      const message =
+        err instanceof ApiClientError ? err.message : "Could not create user";
+      toast.push(message);
+    } finally {
+      setUserBusy(false);
+    }
+  }
+
+  async function removeUser(user: UserDto) {
+    const ok = await confirm({
+      title: "Remove user?",
+      body: (
+        <>
+          Remove <strong>{user.username}</strong>? They will be signed out immediately and lose
+          access.
+        </>
+      ),
+      confirmLabel: "Remove",
+    });
+    if (!ok) return;
+    try {
+      await api.deleteUser(user.id);
+      await reload();
+      toast.push("User removed");
+    } catch (err) {
+      const message = err instanceof ApiClientError ? err.message : "Could not remove user";
+      toast.push(message);
+    }
+  }
 
   async function createToken(e: React.FormEvent) {
     e.preventDefault();
@@ -58,6 +120,80 @@ export function SettingsDialog({ onClose }: { onClose: () => void }) {
   return (
     <Dialog title="Settings" onClose={onClose}>
       <div className="mw-stack">
+        <section>
+          <h3 style={{ fontSize: 14, marginBottom: 8 }}>Users</h3>
+          <p style={{ color: "var(--mw-text-muted)", fontSize: 13, marginTop: 0 }}>
+            Give a colleague access by creating an account. Every user has full access. Share the
+            initial password with them directly.
+          </p>
+
+          <form
+            onSubmit={createUser}
+            style={{ display: "flex", gap: 8, alignItems: "flex-end", flexWrap: "wrap" }}
+          >
+            <div className="mw-field" style={{ flex: 1, minWidth: 140 }}>
+              <label htmlFor="user-name">Username</label>
+              <input
+                id="user-name"
+                className="mw-input"
+                value={newUsername}
+                onChange={(e) => setNewUsername(e.target.value)}
+                placeholder="e.g. alex"
+                autoComplete="off"
+              />
+            </div>
+            <div className="mw-field" style={{ flex: 1, minWidth: 140 }}>
+              <label htmlFor="user-password">Initial password</label>
+              <input
+                id="user-password"
+                className="mw-input"
+                type="password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                placeholder="At least 8 characters"
+                autoComplete="new-password"
+              />
+            </div>
+            <button
+              className="mw-btn mw-btn--primary"
+              disabled={userBusy || !newUsername.trim() || newPassword.length < 8}
+            >
+              Create
+            </button>
+          </form>
+
+          <div style={{ marginTop: 12 }}>
+            {users === null ? (
+              <p style={{ color: "var(--mw-text-faint)" }}>Loading…</p>
+            ) : (
+              users.map((u) => {
+                const isSelf = u.username === currentUsername;
+                return (
+                  <div className="mw-token-row" key={u.id}>
+                    <div className="mw-token-row__meta">
+                      <div className="mw-token-row__name">
+                        {u.username}
+                        {isSelf && <span style={{ color: "var(--mw-text-faint)" }}> (you)</span>}
+                      </div>
+                      <div className="mw-token-row__sub">
+                        Added {new Date(u.createdAt).toLocaleDateString()}
+                      </div>
+                    </div>
+                    <button
+                      className="mw-btn mw-btn--ghost mw-btn--sm"
+                      disabled={isSelf}
+                      title={isSelf ? "You cannot remove your own account" : undefined}
+                      onClick={() => void removeUser(u)}
+                    >
+                      Remove
+                    </button>
+                  </div>
+                );
+              })
+            )}
+          </div>
+        </section>
+
         <section>
           <h3 style={{ fontSize: 14, marginBottom: 8 }}>Agent tokens</h3>
           <p style={{ color: "var(--mw-text-muted)", fontSize: 13, marginTop: 0 }}>

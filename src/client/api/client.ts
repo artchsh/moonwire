@@ -8,6 +8,7 @@ import type {
   ColumnDto,
   CardDto,
   StorageInfo,
+  UserDto,
   ApiErrorBody,
   ErrorCode,
 } from "../../shared/api";
@@ -49,6 +50,12 @@ export const api = {
   login: (username: string, password: string) =>
     request<SessionInfo>("POST", "/api/v1/auth/login", { username, password }),
   logout: () => request<void>("POST", "/api/v1/auth/logout"),
+
+  // Users
+  listUsers: () => request<{ users: UserDto[] }>("GET", "/api/v1/users"),
+  createUser: (username: string, password: string) =>
+    request<UserDto>("POST", "/api/v1/users", { username, password }),
+  deleteUser: (id: string) => request<void>(`DELETE`, `/api/v1/users/${id}`),
 
   // Tokens
   listTokens: () => request<{ tokens: AgentTokenDto[] }>("GET", "/api/v1/tokens"),

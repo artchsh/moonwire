@@ -14,6 +14,7 @@ import type {
   AgentTokenDto,
   CreatedAgentTokenDto,
   Scope,
+  UserDto,
 } from "../../../shared/api";
 
 export async function isSetupComplete(db: AppDatabase): Promise<boolean> {
@@ -37,6 +38,63 @@ export async function createAdmin(
     passwordHash: await hashPassword(password),
     createdAt: now,
   });
+}
+
+/** All user (administrator) accounts, newest first. Never exposes hashes. */
+export async function listUsers(db: AppDatabase): Promise<UserDto[]> {
+  const rows = await db
+    .select({
+      id: schema.admin.id,
+      username: schema.admin.username,
+      createdAt: schema.admin.createdAt,
+    })
+    .from(schema.admin);
+  return rows.sort((a, b) => b.createdAt - a.createdAt);
+}
+
+/** Create an additional user (administrator) account. */
+export async function createUser(
+  db: AppDatabase,
+  username: string,
+  password: string,
+): Promise<UserDto> {
+  const existing = await db
+    .select({ id: schema.admin.id })
+    .from(schema.admin)
+    .where(eq(schema.admin.username, username))
+    .limit(1);
+  if (existing.length > 0) {
+    throw new ApiError("CONFLICT", "That username is already taken");
+  }
+  const id = createId("adm");
+  const now = Date.now();
+  await db.insert(schema.admin).values({
+    id,
+    username,
+    passwordHash: await hashPassword(password),
+    createdAt: now,
+  });
+  return { id, username, createdAt: now };
+}
+
+/**
+ * Remove a user account. Deleting the row cascades to its sessions, so the user
+ * is logged out immediately. Callers cannot remove themselves or the last user.
+ */
+export async function deleteUser(
+  db: AppDatabase,
+  id: string,
+  currentAdminId: string,
+): Promise<void> {
+  if (id === currentAdminId) {
+    throw new ApiError("FORBIDDEN", "You cannot remove your own account");
+  }
+  const rows = await db.select({ id: schema.admin.id }).from(schema.admin);
+  if (rows.length <= 1) {
+    throw new ApiError("CONFLICT", "Cannot remove the last user");
+  }
+  const result = await db.delete(schema.admin).where(eq(schema.admin.id, id));
+  if (!result.meta.changes) throw ApiError.notFound("User");
 }
 
 /** Verify credentials; returns the admin id or null (constant-ish time). */

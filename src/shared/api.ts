@@ -45,6 +45,18 @@ export interface LoginRequest {
   password: string;
 }
 
+/** A user account (an administrator). Passwords/hashes are never exposed. */
+export interface UserDto {
+  id: string;
+  username: string;
+  createdAt: number;
+}
+
+export interface CreateUserRequest {
+  username: string;
+  password: string;
+}
+
 export interface AgentTokenDto {
   id: string;
   name: string;

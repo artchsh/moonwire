@@ -14,6 +14,13 @@ export const loginSchema = z
   })
   .strict();
 
+export const createUserSchema = z
+  .object({
+    username: z.string().trim().min(3).max(64),
+    password: z.string().min(8).max(200),
+  })
+  .strict();
+
 export const createTokenSchema = z
   .object({
     name: z.string().trim().min(1).max(100),
