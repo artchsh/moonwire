@@ -393,6 +393,7 @@
   border: 1px solid var(--mw-border);
   border-radius: var(--mw-radius-lg);
   box-shadow: var(--mw-highlight);
+  transition: opacity var(--mw-duration) var(--mw-ease);
 }
 .mw-column--over {
   border-color: var(--mw-accent);
@@ -451,18 +452,39 @@
   color: var(--mw-text);
   cursor: pointer;
   box-shadow: var(--mw-shadow-1), var(--mw-highlight);
-  /* Only colour transitions — never transform, so dnd-kit's drag/drop transform
-     is not animated by our CSS (that is what makes dragging feel laggy). */
+  /* Only colour/opacity transitions — never transform, so dnd-kit's drag/drop
+     transform is not animated by our CSS (that is what makes dragging feel laggy). */
   transition:
     border-color var(--mw-duration) var(--mw-ease),
-    background var(--mw-duration) var(--mw-ease);
+    background var(--mw-duration) var(--mw-ease),
+    opacity var(--mw-duration) var(--mw-ease);
 }
 .mw-card:hover {
   border-color: var(--mw-border-strong);
   background: var(--mw-surface-hover);
 }
 .mw-card--dragging {
-  opacity: 0.5;
+  opacity: 0.4;
+}
+/* The card riding under the pointer in the DragOverlay: lift it on pick-up. */
+.mw-card--overlay {
+  cursor: grabbing;
+  transform: scale(1.03);
+  border-color: var(--mw-border-strong);
+  box-shadow: var(--mw-shadow-panel, 0 12px 32px rgba(0, 0, 0, 0.35)), var(--mw-highlight);
+  animation: mw-card-lift 160ms var(--mw-ease);
+}
+@keyframes mw-card-lift {
+  from {
+    transform: scale(1);
+    box-shadow: var(--mw-shadow-1), var(--mw-highlight);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mw-card--overlay {
+    animation: none;
+    transform: none;
+  }
 }
 .mw-card__title {
   font-size: 13.5px;

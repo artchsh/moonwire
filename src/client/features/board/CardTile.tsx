@@ -1,6 +1,11 @@
 import { memo } from "react";
-import { useSortable } from "@dnd-kit/sortable";
+import { defaultAnimateLayoutChanges, useSortable, type AnimateLayoutChanges } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+
+// Animate the post-drop reorder too (by default dnd-kit only animates
+// displacement while sorting, so a quick drop snaps neighbours instantly).
+const animateLayoutChanges: AnimateLayoutChanges = (args) =>
+  defaultAnimateLayoutChanges({ ...args, wasDragging: true });
 import { Check, Circle, StickyNote } from "lucide-react";
 import type { CardDto } from "../../../shared/api";
 
@@ -52,6 +57,7 @@ export const CardTile = memo(function CardTile({
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: card.id,
     data: { type: "card", columnId: card.columnId },
+    animateLayoutChanges,
   });
 
   const style = {

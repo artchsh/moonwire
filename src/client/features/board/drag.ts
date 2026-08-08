@@ -27,6 +27,10 @@ export function moveCardInSnapshot(
   activeCardId: string,
   overId: string,
 ): CardMove | null {
+  // Hovering the card's own slot: nothing to move (without this, the -1 from
+  // findIndex below would read as "append to end").
+  if (activeCardId === overId) return null;
+
   const columns = snapshot.columns.map((c) => ({ ...c, cards: [...c.cards] }));
 
   let active: CardDto | undefined;
@@ -56,7 +60,13 @@ export function moveCardInSnapshot(
     destColumnId = destCol.id;
     const withoutActive = destCol.cards.filter((c) => c.id !== activeCardId);
     insertIndex = withoutActive.findIndex((c) => c.id === overId);
-    if (insertIndex < 0) insertIndex = withoutActive.length;
+    if (insertIndex < 0) {
+      insertIndex = withoutActive.length;
+    } else if (destColumnId === origColumnId && origIndex < insertIndex + 1) {
+      // Same-column drag downward: land AFTER the hovered card (arrayMove
+      // semantics), otherwise dragging down one slot is a no-op.
+      insertIndex += 1;
+    }
   }
 
   if (destColumnId === origColumnId && insertIndex === origIndex) return null;
@@ -78,6 +88,74 @@ export function moveCardInSnapshot(
     beforeId,
     afterId,
     next: { ...snapshot, columns },
+  };
+}
+
+function findCardPosition(
+  snapshot: BoardSnapshot,
+  cardId: string,
+): { columnId: string; index: number } | null {
+  for (const col of snapshot.columns) {
+    const index = col.cards.findIndex((c) => c.id === cardId);
+    if (index >= 0) return { columnId: col.id, index };
+  }
+  return null;
+}
+
+/**
+ * Live preview while dragging: move the card into the column under the pointer
+ * so dnd-kit can animate cards making room. Only cross-column moves are
+ * previewed — same-column reordering is already rendered by sortable
+ * transforms and applied on drop. Returns null when nothing should change.
+ */
+export function previewCardMove(
+  snapshot: BoardSnapshot,
+  activeCardId: string,
+  overId: string,
+): BoardSnapshot | null {
+  const from = findCardPosition(snapshot, activeCardId);
+  if (!from) return null;
+
+  const overColumnId = snapshot.columns.some((c) => c.id === overId)
+    ? overId
+    : findCardPosition(snapshot, overId)?.columnId;
+  if (!overColumnId || overColumnId === from.columnId) return null;
+
+  return moveCardInSnapshot(snapshot, activeCardId, overId)?.next ?? null;
+}
+
+/**
+ * Finalize a card drag: apply any last reorder relative to `overId` on the
+ * live (possibly cross-column previewed) snapshot, then diff against the
+ * drag-origin snapshot to decide whether the move needs persisting.
+ */
+export function finalizeCardMove(
+  origin: BoardSnapshot,
+  current: BoardSnapshot,
+  cardId: string,
+  overId: string,
+): { next: BoardSnapshot; move: CardMove | null } {
+  const next = moveCardInSnapshot(current, cardId, overId)?.next ?? current;
+
+  const origPos = findCardPosition(origin, cardId);
+  const nextPos = findCardPosition(next, cardId);
+  if (!origPos || !nextPos) return { next, move: null };
+  if (origPos.columnId === nextPos.columnId && origPos.index === nextPos.index) {
+    return { next, move: null };
+  }
+
+  const destCol = next.columns.find((c) => c.id === nextPos.columnId)!;
+  const card = destCol.cards[nextPos.index]!;
+  return {
+    next,
+    move: {
+      cardId,
+      version: card.version,
+      toColumnId: nextPos.columnId,
+      beforeId: destCol.cards[nextPos.index - 1]?.id ?? null,
+      afterId: destCol.cards[nextPos.index + 1]?.id ?? null,
+      next,
+    },
   };
 }
 

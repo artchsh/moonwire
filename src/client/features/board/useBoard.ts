@@ -12,6 +12,13 @@ export interface BoardState {
   loading: boolean;
   error: string | null;
   reload: () => Promise<void>;
+  /**
+   * While true, the sync poll is skipped. Set during drags: replacing the
+   * snapshot mid-drag re-creates the sortable `items` arrays, which makes
+   * dnd-kit zero out its displacement transitions (cards snap instead of
+   * sliding). Missed events are picked up by the next tick after the drag.
+   */
+  syncPausedRef: React.MutableRefObject<boolean>;
 }
 
 export function useBoard(boardId: string): BoardState {
@@ -22,6 +29,7 @@ export function useBoard(boardId: string): BoardState {
   // The sync-stream position our snapshot reflects. A ref (not state) so the
   // poll loop always reads the latest value without re-arming its interval.
   const revisionRef = useRef(0);
+  const syncPausedRef = useRef(false);
 
   const reload = useCallback(async () => {
     try {
@@ -48,7 +56,7 @@ export function useBoard(boardId: string): BoardState {
     let inFlight = false;
 
     const tick = async () => {
-      if (stopped || inFlight || document.visibilityState === "hidden") return;
+      if (stopped || inFlight || syncPausedRef.current || document.visibilityState === "hidden") return;
       inFlight = true;
       try {
         const res = await api.boardEvents(boardId, revisionRef.current);
@@ -70,6 +78,10 @@ export function useBoard(boardId: string): BoardState {
             return s;
           }
           revisionRef.current = res.revision;
+          // All events were our own echo: keep the same snapshot reference so
+          // nothing re-renders (revisionRef, not snapshot.revision, drives the
+          // poll cursor).
+          if (applied === s) return s;
           return { ...applied, revision: res.revision };
         });
         if (needsResync) await reload();
@@ -93,5 +105,5 @@ export function useBoard(boardId: string): BoardState {
     };
   }, [boardId, reload]);
 
-  return { snapshot, setSnapshot, loading, error, reload };
+  return { snapshot, setSnapshot, loading, error, reload, syncPausedRef };
 }

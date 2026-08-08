@@ -1,5 +1,5 @@
-import { memo, useState } from "react";
-import { useSortable } from "@dnd-kit/sortable";
+import { memo, useMemo, useState } from "react";
+import { defaultAnimateLayoutChanges, useSortable, type AnimateLayoutChanges } from "@dnd-kit/sortable";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { GripVertical, Trash2 } from "lucide-react";
@@ -10,6 +10,10 @@ import { Dialog, useConfirm } from "../../components/ui";
 import { Select } from "../../components/Select";
 
 const ICON = { size: 16, strokeWidth: 1.75 } as const;
+
+// Animate the post-drop reorder too (see CardTile).
+const animateLayoutChanges: AnimateLayoutChanges = (args) =>
+  defaultAnimateLayoutChanges({ ...args, wasDragging: true });
 
 export const ColumnLane = memo(function ColumnLane({
   column,
@@ -31,7 +35,10 @@ export const ColumnLane = memo(function ColumnLane({
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: column.id,
     data: { type: "column" },
+    animateLayoutChanges,
   });
+  // Stable identity while this column's card set is unchanged (see BoardScreen).
+  const cardIds = useMemo(() => column.cards.map((c) => c.id), [column.cards]);
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState(column.name);
   const [relocating, setRelocating] = useState(false);
@@ -113,7 +120,7 @@ export const ColumnLane = memo(function ColumnLane({
         </button>
       </header>
 
-      <SortableContext items={column.cards.map((c) => c.id)} strategy={verticalListSortingStrategy}>
+      <SortableContext items={cardIds} strategy={verticalListSortingStrategy}>
         <div className="mw-column__cards">
           {column.cards.map((card) => (
             <CardTile
