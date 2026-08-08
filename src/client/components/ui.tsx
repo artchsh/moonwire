@@ -4,6 +4,7 @@ import {
   useContext,
   useEffect,
   useId,
+  useMemo,
   useRef,
   useState,
   type ReactNode,
@@ -113,8 +114,10 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     setTimeout(() => setToasts((prev) => prev.filter((t) => t.id !== id)), 5000);
   }, []);
 
+  const value = useMemo(() => ({ push }), [push]);
+
   return (
-    <ToastContext.Provider value={{ push }}>
+    <ToastContext.Provider value={value}>
       {children}
       <div className="mw-toasts" aria-live="polite" role="status">
         {toasts.map((t) => (

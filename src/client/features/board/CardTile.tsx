@@ -1,16 +1,20 @@
+import { memo } from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { Check, Circle, StickyNote } from "lucide-react";
 import type { CardDto } from "../../../shared/api";
 
-export function CardTile({
+// Memoized: a card only re-renders when its own data (or drag state) changes,
+// not when a sibling card or another column updates. Callbacks are stable
+// (they receive the card), so shallow prop comparison holds.
+export const CardTile = memo(function CardTile({
   card,
   onOpen,
   onToggleComplete,
 }: {
   card: CardDto;
-  onOpen: () => void;
-  onToggleComplete: () => void;
+  onOpen: (card: CardDto) => void;
+  onToggleComplete: (card: CardDto) => void;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: card.id,
@@ -28,7 +32,7 @@ export function CardTile({
   function onKeyDown(e: React.KeyboardEvent) {
     if (e.key === "Enter") {
       e.preventDefault();
-      onOpen();
+      onOpen(card);
       return;
     }
     (listeners as Record<string, ((e: React.KeyboardEvent) => void) | undefined>)?.onKeyDown?.(e);
@@ -41,7 +45,7 @@ export function CardTile({
       {...attributes}
       {...listeners}
       onKeyDown={onKeyDown}
-      onClick={onOpen}
+      onClick={() => onOpen(card)}
       className={`mw-card${isDragging ? " mw-card--dragging" : ""}${card.completed ? " mw-card--done" : ""}`}
       aria-label={`Card: ${card.title}${card.completed ? " (completed)" : ""}. Press Enter to open.`}
     >
@@ -54,7 +58,7 @@ export function CardTile({
           onPointerDown={(e) => e.stopPropagation()}
           onClick={(e) => {
             e.stopPropagation();
-            onToggleComplete();
+            onToggleComplete(card);
           }}
         >
           {card.completed ? <Check size={13} strokeWidth={3} /> : <Circle size={16} strokeWidth={1.75} />}
@@ -85,4 +89,4 @@ export function CardTile({
       )}
     </div>
   );
-}
+});

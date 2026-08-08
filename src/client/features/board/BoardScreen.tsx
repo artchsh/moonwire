@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   DndContext,
   DragOverlay,
@@ -16,7 +16,7 @@ import {
   horizontalListSortingStrategy,
   sortableKeyboardCoordinates,
 } from "@dnd-kit/sortable";
-import type { CardDto } from "../../../shared/api";
+import type { CardDto, ColumnWithCards } from "../../../shared/api";
 import { useBoard } from "./useBoard";
 import { useBoardMutations } from "./useBoardMutations";
 import { ColumnLane } from "./ColumnLane";
@@ -30,6 +30,17 @@ export function BoardScreen({ boardId }: { boardId: string }) {
   const m = useBoardMutations(state, boardId);
   const [activeCard, setActiveCard] = useState<CardDto | null>(null);
   const [openCardId, setOpenCardId] = useState<string | null>(null);
+
+  // Stable handlers so memoized ColumnLane/CardTile don't re-render on unrelated updates.
+  const handleOpenCard = useCallback((card: CardDto) => setOpenCardId(card.id), []);
+  const columnsRef = useRef<ColumnWithCards[]>([]);
+  useEffect(() => {
+    columnsRef.current = m.snapshot?.columns ?? [];
+  }, [m.snapshot]);
+  const getOtherColumns = useCallback(
+    (columnId: string) => columnsRef.current.filter((c) => c.id !== columnId),
+    [],
+  );
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
@@ -113,11 +124,11 @@ export function BoardScreen({ boardId }: { boardId: string }) {
               <ColumnLane
                 key={column.id}
                 column={column}
-                otherColumns={snapshot.columns.filter((c) => c.id !== column.id)}
+                getOtherColumns={getOtherColumns}
                 onRename={m.renameColumn}
                 onDelete={m.deleteColumn}
                 onAddCard={m.addCard}
-                onOpenCard={(card) => setOpenCardId(card.id)}
+                onOpenCard={handleOpenCard}
                 onToggleComplete={m.toggleComplete}
               />
             ))}

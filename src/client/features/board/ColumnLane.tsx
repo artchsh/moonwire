@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { memo, useState } from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
@@ -11,9 +11,9 @@ import { Select } from "../../components/Select";
 
 const ICON = { size: 16, strokeWidth: 1.75 } as const;
 
-export function ColumnLane({
+export const ColumnLane = memo(function ColumnLane({
   column,
-  otherColumns,
+  getOtherColumns,
   onRename,
   onDelete,
   onAddCard,
@@ -21,7 +21,7 @@ export function ColumnLane({
   onToggleComplete,
 }: {
   column: ColumnWithCards;
-  otherColumns: ColumnWithCards[];
+  getOtherColumns: (columnId: string) => ColumnWithCards[];
   onRename: (column: ColumnWithCards, name: string) => void | Promise<void>;
   onDelete: (column: ColumnWithCards, relocateToColumnId?: string) => void | Promise<void>;
   onAddCard: (columnId: string, title: string, files?: File[]) => void | Promise<void>;
@@ -119,8 +119,8 @@ export function ColumnLane({
             <CardTile
               key={card.id}
               card={card}
-              onOpen={() => onOpenCard(card)}
-              onToggleComplete={() => onToggleComplete(card)}
+              onOpen={onOpenCard}
+              onToggleComplete={onToggleComplete}
             />
           ))}
         </div>
@@ -133,7 +133,7 @@ export function ColumnLane({
       {relocating && (
         <RelocateDialog
           column={column}
-          targets={otherColumns}
+          targets={getOtherColumns(column.id)}
           onClose={() => setRelocating(false)}
           onConfirm={async (targetId) => {
             setRelocating(false);
@@ -144,7 +144,7 @@ export function ColumnLane({
       {confirmEl}
     </section>
   );
-}
+});
 
 function RelocateDialog({
   column,

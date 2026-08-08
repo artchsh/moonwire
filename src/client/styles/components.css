@@ -451,15 +451,15 @@
   color: var(--mw-text);
   cursor: pointer;
   box-shadow: var(--mw-shadow-1), var(--mw-highlight);
+  /* Only colour transitions — never transform, so dnd-kit's drag/drop transform
+     is not animated by our CSS (that is what makes dragging feel laggy). */
   transition:
     border-color var(--mw-duration) var(--mw-ease),
-    background var(--mw-duration) var(--mw-ease),
-    transform var(--mw-duration) var(--mw-ease);
+    background var(--mw-duration) var(--mw-ease);
 }
 .mw-card:hover {
   border-color: var(--mw-border-strong);
   background: var(--mw-surface-hover);
-  transform: translateY(-1px);
 }
 .mw-card--dragging {
   opacity: 0.5;

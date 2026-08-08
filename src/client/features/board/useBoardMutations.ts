@@ -141,28 +141,38 @@ export function useBoardMutations(state: BoardState, boardId: string) {
 
   const persistCardMove = useCallback(
     async (move: CardMove) => {
-      setSnapshot(move.next); // optimistic
+      setSnapshot(move.next); // optimistic — the drop is already on screen
       try {
-        await api.moveCard(move.cardId, move.version, move.toColumnId, move.beforeId, move.afterId);
-        await reload(); // reconcile positions/versions
+        // Reconcile just the moved card's version from the response; no full
+        // refetch, so the drag feels instant.
+        const updated = await api.moveCard(
+          move.cardId,
+          move.version,
+          move.toColumnId,
+          move.beforeId,
+          move.afterId,
+        );
+        setSnapshot((s) => replaceCard(s, updated));
       } catch (err) {
         await onConflict(err, "Could not move card.");
       }
     },
-    [setSnapshot, reload, onConflict],
+    [setSnapshot, onConflict],
   );
 
   const persistColumnMove = useCallback(
     async (move: ColumnMove) => {
-      setSnapshot(move.next);
+      setSnapshot(move.next); // optimistic
       try {
-        await api.moveColumn(move.columnId, move.version, move.beforeId, move.afterId);
-        await reload();
+        const updated = await api.moveColumn(move.columnId, move.version, move.beforeId, move.afterId);
+        setSnapshot((s) =>
+          s ? { ...s, columns: s.columns.map((c) => (c.id === updated.id ? { ...c, ...updated } : c)) } : s,
+        );
       } catch (err) {
         await onConflict(err, "Could not move column.");
       }
     },
-    [setSnapshot, reload, onConflict],
+    [setSnapshot, onConflict],
   );
 
   return {
