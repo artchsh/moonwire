@@ -19,7 +19,9 @@ import {
 import type { CardDto, ColumnWithCards } from "../../../shared/api";
 import { useBoard } from "./useBoard";
 import { useBoardMutations } from "./useBoardMutations";
+import { Check, Circle } from "lucide-react";
 import { ColumnLane } from "./ColumnLane";
+import { CardTileBody } from "./CardTile";
 import { AddColumn } from "./AddColumn";
 import { moveCardInSnapshot, moveColumnInSnapshot } from "./drag";
 import { CardPanel } from "../card/CardPanel";
@@ -140,7 +142,17 @@ export function BoardScreen({ boardId }: { boardId: string }) {
         <DragOverlay>
           {activeCard ? (
             <div className="mw-card" style={{ cursor: "grabbing" }}>
-              <div className="mw-card__title">{activeCard.title}</div>
+              <div className="mw-card__row">
+                <span className={`mw-check${activeCard.completed ? " mw-check--on" : ""}`} aria-hidden="true">
+                  {activeCard.completed ? (
+                    <Check size={13} strokeWidth={3} />
+                  ) : (
+                    <Circle size={16} strokeWidth={1.75} />
+                  )}
+                </span>
+                <div className="mw-card__title">{activeCard.title}</div>
+              </div>
+              <CardTileBody card={activeCard} />
             </div>
           ) : null}
         </DragOverlay>

@@ -4,6 +4,39 @@ import { CSS } from "@dnd-kit/utilities";
 import { Check, Circle, StickyNote } from "lucide-react";
 import type { CardDto } from "../../../shared/api";
 
+// Inner card body, shared between the sortable tile and the DragOverlay so the
+// dragged card keeps its thumbnails and notes while in flight.
+export function CardTileBody({ card }: { card: CardDto }) {
+  const thumbs = card.attachments.slice(0, 3);
+  const extra = card.attachments.length - thumbs.length;
+
+  return (
+    <>
+      {card.attachments.length > 0 && (
+        <div className="mw-card__thumbs">
+          {thumbs.map((a) => (
+            <img
+              key={a.id}
+              className="mw-card__thumb"
+              src={a.thumbnailUrl}
+              alt={a.filename}
+              loading="lazy"
+              draggable={false}
+            />
+          ))}
+          {extra > 0 && <span className="mw-card__thumb-more">+{extra}</span>}
+        </div>
+      )}
+
+      {card.description.trim() && (
+        <div className="mw-card__meta">
+          <StickyNote size={13} strokeWidth={1.75} aria-hidden="true" /> Notes
+        </div>
+      )}
+    </>
+  );
+}
+
 // Memoized: a card only re-renders when its own data (or drag state) changes,
 // not when a sibling card or another column updates. Callbacks are stable
 // (they receive the card), so shallow prop comparison holds.
@@ -25,9 +58,6 @@ export const CardTile = memo(function CardTile({
     transform: CSS.Transform.toString(transform),
     transition,
   };
-
-  const thumbs = card.attachments.slice(0, 3);
-  const extra = card.attachments.length - thumbs.length;
 
   function onKeyDown(e: React.KeyboardEvent) {
     if (e.key === "Enter") {
@@ -66,27 +96,7 @@ export const CardTile = memo(function CardTile({
         <div className="mw-card__title">{card.title}</div>
       </div>
 
-      {card.attachments.length > 0 && (
-        <div className="mw-card__thumbs">
-          {thumbs.map((a) => (
-            <img
-              key={a.id}
-              className="mw-card__thumb"
-              src={a.thumbnailUrl}
-              alt={a.filename}
-              loading="lazy"
-              draggable={false}
-            />
-          ))}
-          {extra > 0 && <span className="mw-card__thumb-more">+{extra}</span>}
-        </div>
-      )}
-
-      {card.description.trim() && (
-        <div className="mw-card__meta">
-          <StickyNote size={13} strokeWidth={1.75} aria-hidden="true" /> Notes
-        </div>
-      )}
+      <CardTileBody card={card} />
     </div>
   );
 });
